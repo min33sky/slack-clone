@@ -9,6 +9,8 @@
     "target": "es5",
     "strict": true,
     "resolveJsonModule": true,
+
+    // 모듈을 상대 주소로 불러오지 않게 설정
     "baseUrl": ".",
     "paths": {
       "@hooks/*": ["hooks/*"],

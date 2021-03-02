@@ -1,7 +1,7 @@
 import path from 'path';
-// import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import webpack from 'webpack';
-// import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -41,6 +41,11 @@ const config: webpack.Configuration = {
             '@babel/preset-react',
             '@babel/preset-typescript',
           ],
+          env: {
+            development: {
+              plugins: [require.resolve('react-refresh/babel')],
+            },
+          },
         },
         exclude: path.join(__dirname, 'node_modules'),
       },
@@ -51,12 +56,13 @@ const config: webpack.Configuration = {
     ],
   },
   plugins: [
-    // new ForkTsCheckerWebpackPlugin({
-    //   async: false,
-    //   // eslint: {
-    //   //   files: "./src/**/*",
-    //   // },
-    // }),
+    // ? 타입스크립트 체크와 웹팩이 동시에 돌아가게 설정
+    new ForkTsCheckerWebpackPlugin({
+      async: false,
+      // eslint: {
+      //   files: "./src/**/*",
+      // },
+    }),
     // ? process.NODE_ENV를 프론트앤드에서 사용 가능
     new webpack.EnvironmentPlugin({
       NODE_ENV: isDevelopment ? 'development' : 'production',
@@ -67,22 +73,22 @@ const config: webpack.Configuration = {
     filename: '[name].js',
     publicPath: '/dist/',
   },
-  // devServer: {
-  //   historyApiFallback: true, // react router
-  //   port: 3090,
-  //   publicPath: '/dist/',
-  //   proxy: {
-  //     '/api/': {
-  //       target: 'http://localhost:3095',
-  //       changeOrigin: true,
-  //     },
-  //   },
-  // },
+  devServer: {
+    historyApiFallback: true, // ? react router (서버는 localhost:3090 주소밖에 모르지만 이 설정을 통해 다른 주소를 받을 수 있음)
+    port: 3090,
+    publicPath: '/dist/',
+    // proxy: {
+    //   '/api/': {
+    //     target: 'http://localhost:3095',
+    //     changeOrigin: true,
+    //   },
+    // },
+  },
 };
 
 if (isDevelopment && config.plugins) {
-  // config.plugins.push(new webpack.HotModuleReplacementPlugin());
-  // config.plugins.push(new ReactRefreshWebpackPlugin());
+  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  config.plugins.push(new ReactRefreshWebpackPlugin());
   // config.plugins.push(new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: true }));
 }
 if (!isDevelopment && config.plugins) {

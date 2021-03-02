@@ -4,12 +4,10 @@
     "es2021": true
   },
   "extends": [
+    "eslint:recommended",
     "plugin:react/recommended",
     "airbnb",
-    "plugin:prettier/recommended",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript"
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -21,19 +19,35 @@
   },
   "plugins": ["react", "@typescript-eslint", "prettier", "import"],
   "rules": {
-    "prettier/prettier": ["error", { "singleQuote": true, "endOfLine": "auto" }],
+    "prettier/prettier": [
+      "warn",
+      {
+        "singleQuote": true,
+        "jsxSingleQuote": true,
+        "endOfLine": "auto",
+        "trailingComma": "all",
+        "parser": "flow"
+      }
+    ],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
-    // turn on errors for missing imports
-    "import/no-unresolved": "error"
+    // import react from 'react' was used before it was defined.(no-use-before-define)
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": "warn",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      { "js": "never", "jsx": "never", "ts": "never", "tsx": "never", "json": "never" }
+    ]
   },
   "settings": {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"]
     },
+    // 해당 확장자 모듈 가져오도록 등록
     "import/resolver": {
       "typescript": {
-        "alwaysTryTypes": true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
-        "project": "./tsconfig.json"
+        // "alwaysTryTypes": true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+        // "project": "./tsconfig.json"
       },
 
       "node": {
