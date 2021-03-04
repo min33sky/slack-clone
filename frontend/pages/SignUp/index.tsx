@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import useInput from '@hooks/useInput';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
+import useSWR from 'swr';
+import fetcher from '@utils/fetch';
 import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } from './style';
 
 /**
@@ -9,6 +11,10 @@ import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } 
  * /signup
  */
 export default function SignUp() {
+  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+    dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
+  });
+
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, , setPassword] = useInput('');
@@ -37,7 +43,6 @@ export default function SignUp() {
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!mismatchError && nickname) {
-        console.log('서버로 회원가입하기');
         setSignUpError('');
         setSignUpSuccess(false);
         axios
@@ -59,6 +64,14 @@ export default function SignUp() {
     },
     [email, mismatchError, nickname, password]
   );
+
+  if (data === undefined) {
+    return <p>로딩중....</p>;
+  }
+
+  if (data) {
+    return <Redirect to="/workspace/channel" />;
+  }
 
   return (
     <Container>
