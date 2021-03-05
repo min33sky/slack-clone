@@ -11,7 +11,7 @@ import useSWR from 'swr';
  * /login
  */
 export default function Login() {
-  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+  const { data, revalidate } = useSWR('http://localhost:3095/api/users', fetcher, {
     // dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
   });
   const [logInError, setLogInError] = useState(false);

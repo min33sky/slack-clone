@@ -1,7 +1,12 @@
 import React, { useState, useCallback, Dispatch, SetStateAction } from 'react';
 
+/**
+ * Custom Input Hook
+ * @param initalValue 상태 초기값
+ * @returns [상태값, 인풋 이벤트 핸들러, 상태변경함수]
+ */
 function useInput<T>(
-  initalValue: T,
+  initalValue: T
   // eslint-disable-next-line no-unused-vars
 ): [T, (e: React.ChangeEvent<HTMLInputElement>) => void, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState(initalValue);

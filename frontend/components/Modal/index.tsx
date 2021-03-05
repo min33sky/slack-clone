@@ -1,5 +1,5 @@
 import { CloseModalButton } from '@components/Menu/style';
-import React, { SyntheticEvent, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { CreateModal } from './style';
 
 interface IProps {
@@ -9,7 +9,7 @@ interface IProps {
 }
 
 export default function Modal({ show, onCloseModal, children }: IProps) {
-  const stopPropagation = useCallback((e: SyntheticEvent) => {
+  const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
   }, []);
 
