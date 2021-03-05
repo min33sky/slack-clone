@@ -11,7 +11,7 @@ import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } 
  * /signup
  */
 export default function SignUp() {
-  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+  const { data, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
     dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
   });
 
@@ -70,7 +70,7 @@ export default function SignUp() {
   }
 
   if (data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/sleact/channel/일반" />;
   }
 
   return (

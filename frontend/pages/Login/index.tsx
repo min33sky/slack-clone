@@ -39,7 +39,7 @@ export default function Login() {
           setLogInError(e.response?.data?.statusCode === 401);
         });
     },
-    [email, password, mutate]
+    [email, password, revalidate]
   );
 
   if (data === undefined) {
@@ -47,7 +47,7 @@ export default function Login() {
   }
 
   if (data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/sleact/channel/일반" />;
   }
 
   return (
