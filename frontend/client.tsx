@@ -7,7 +7,7 @@ render(
   <BrowserRouter>
     <App />
   </BrowserRouter>,
-  document.querySelector('#app'),
+  document.querySelector('#app')
 );
 
 // pages - 서비스 페이지

@@ -4,7 +4,7 @@ import lodable from '@loadable/component';
 
 const Login = lodable(() => import('@pages/Login'));
 const SignUp = lodable(() => import('@pages/SignUp'));
-const Channel = lodable(() => import('@pages/Channel'));
+const Workspace = lodable(() => import('@layouts/Workspace'));
 
 export default function App() {
   return (
@@ -12,7 +12,7 @@ export default function App() {
       <Redirect exact path="/" to="/login" />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={SignUp} />
-      <Route path="/workspace/channel" component={Channel} />
+      <Route path="/workspace" component={Workspace} />
     </Switch>
   );
 }
