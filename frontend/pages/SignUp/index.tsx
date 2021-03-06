@@ -11,6 +11,7 @@ import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } 
  * /signup
  */
 export default function SignUp() {
+  // 사용자 정보 fetch
   const { data } = useSWR('http://localhost:3095/api/users', fetcher, {
     dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
   });
@@ -55,7 +56,7 @@ export default function SignUp() {
             console.log(response);
             setSignUpSuccess(true);
           })
-          .catch((error: AxiosError<any>) => {
+          .catch((error: AxiosError) => {
             console.log(error.response);
             setSignUpError(error.response?.data);
           })
@@ -65,6 +66,7 @@ export default function SignUp() {
     [email, mismatchError, nickname, password]
   );
 
+  // ? 데이터가 존재하지 않을 경우는 false이므로 !data를 사용하지 않는다.
   if (data === undefined) {
     return <p>로딩중....</p>;
   }
@@ -81,6 +83,7 @@ export default function SignUp() {
           <span>이메일 주소</span>
           <Input type="email" name="email" id="email" value={email} onChange={onChangeEmail} />
         </Label>
+
         <Label>
           <span>닉네임</span>
           <div>
@@ -93,6 +96,7 @@ export default function SignUp() {
             />
           </div>
         </Label>
+
         <Label>
           <span>비밀번호</span>
           <div>
@@ -105,6 +109,7 @@ export default function SignUp() {
             />
           </div>
         </Label>
+
         <Label>
           <span>비밀번호 확인</span>
           <div>
@@ -124,6 +129,7 @@ export default function SignUp() {
 
         <Button type="submit">회원가입</Button>
       </Form>
+
       <LinkContainer>
         이미 회원이신가요? <Link to="/login">로그인 하러 가기</Link>
       </LinkContainer>

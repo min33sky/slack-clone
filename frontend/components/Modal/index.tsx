@@ -1,6 +1,5 @@
-import { CloseModalButton } from '@components/Menu/style';
 import React, { useCallback } from 'react';
-import { CreateModal } from './style';
+import { CloseModalButton, Backdrop } from '@components/Modal/style';
 
 interface IProps {
   show: boolean;
@@ -8,6 +7,11 @@ interface IProps {
   children: React.ReactNode;
 }
 
+/**
+ * 모달
+ * @param show 모달을 보여줄 지 유무
+ * @param onCloseModal 모달 종료 함수
+ */
 export default function Modal({ show, onCloseModal, children }: IProps) {
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -18,11 +22,11 @@ export default function Modal({ show, onCloseModal, children }: IProps) {
   }
 
   return (
-    <CreateModal onClick={onCloseModal}>
+    <Backdrop onClick={onCloseModal}>
       <div role="presentation" onClick={stopPropagation}>
         <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>
         {children}
       </div>
-    </CreateModal>
+    </Backdrop>
   );
 }

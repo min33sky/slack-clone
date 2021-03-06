@@ -35,6 +35,8 @@
     // import react from 'react' was used before it was defined.(no-use-before-define)
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": "warn",
+    // _로 시작하는 변수는 사용하지 않아도 경고 표시가 뜨지 않는다.
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "import/extensions": [
       "error",
       "ignorePackages",

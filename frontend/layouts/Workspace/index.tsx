@@ -1,16 +1,15 @@
 import fetcher from '@utils/fetch';
-import axios, { AxiosError } from 'axios';
-import React, { SyntheticEvent, useCallback, useState } from 'react';
+import axios from 'axios';
+import React, { useCallback, useState } from 'react';
 import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import useSWR from 'swr';
 import gravatar from 'gravatar';
 import { IChannel, IUser } from '@typings/db';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
-import { toast } from 'react-toastify';
-import Modal from '@components/Modal';
-import { Button, Input, Label } from '@pages/SignUp/style';
-import CreateChannelModal from '@components/CreateChannelModal';
+
+import ChannelModal from '@components/ChannelModal';
+import WorkspaceModal from '@components/WorkspaceModal';
 import {
   AddButton,
   Channels,
@@ -22,7 +21,7 @@ import {
   ProfileModal,
   RightMenu,
   WorkspaceButton,
-  WorkspaceModal,
+  WorkspaceMenu,
   WorkspaceName,
   Workspaces,
   WorkspaceWrapper,
@@ -32,6 +31,7 @@ const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 function Workspace() {
+  // 로그인 사용자 데이터 fetch
   const { data: userData, mutate, revalidate } = useSWR<IUser | false>(
     'http://localhost:3095/api/users',
     fetcher
@@ -39,6 +39,7 @@ function Workspace() {
 
   const { workspace } = useParams<{ workspace: string }>();
 
+  // 워크스페이스에 속한 채널들을 fetch
   const { data: channelData } = useSWR<IChannel[]>(
     userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
     fetcher
@@ -49,16 +50,13 @@ function Workspace() {
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
-  const [newWorkspace, setNewWorkspace] = useState('');
-  const [newUrl, setNewUrl] = useState('');
-
   const onLogout = useCallback(() => {
     axios
       .post('http://localhost:3095/api/users/logout', null, { withCredentials: true })
       .then(() => mutate(false, false)); // ? mutate의 두 번째 인자 shouldRevalidate를 false로 설정하면 data값을 서버에 확인하지 않고 바꿀 수 있다.
   }, [mutate]);
 
-  const onClickUserProfile = useCallback((e: SyntheticEvent) => {
+  const onClickUserProfile = useCallback((e: React.MouseEvent) => {
     // ? 이벤트 버블링을 막아서 메뉴 상태 변경이 계속 호출되는 것을 막는다.
     e.stopPropagation();
     setShowUserMenu((prev) => !prev);
@@ -68,55 +66,16 @@ function Workspace() {
     setShowCreateWorkspaceModal(true);
   }, []);
 
-  const onChangeNewWorkspace = useCallback((e) => {
-    setNewWorkspace(e.target.value);
-  }, []);
-
-  const onChangeNewUrl = useCallback((e) => {
-    setNewUrl(e.target.value);
-  }, []);
-
-  const onCreateWorkspace = useCallback(
-    (e: React.ChangeEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (!newWorkspace || !newWorkspace.trim()) return;
-      if (!newUrl || !newUrl.trim()) return;
-      axios
-        .post(
-          'http://localhost:3095/api/workspaces',
-          {
-            workspace: newWorkspace,
-            url: newUrl,
-          },
-          { withCredentials: true }
-        )
-        .then(() => {
-          revalidate();
-          setShowCreateWorkspaceModal(false);
-          setNewWorkspace('');
-          setNewUrl('');
-        })
-        .catch((error: AxiosError) => {
-          console.dir(error);
-          toast.error(error.response?.data, { position: 'bottom-center' });
-        });
-    },
-    [newUrl, newWorkspace, revalidate]
-  );
-
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
+    setShowWorkspaceModal(false);
   }, []);
 
-  const toggleWorkspaceModal = useCallback(
-    (e) => {
-      e.stopPropagation();
-      console.log('zz', showWorkspaceModal);
-      setShowWorkspaceModal((prev) => !prev);
-    },
-    [showWorkspaceModal]
-  );
+  const toggleWorkspaceModal = useCallback((e) => {
+    e.stopPropagation();
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
 
   const onClickAddChannel = useCallback(() => {
     setShowCreateChannelModal(true);
@@ -132,7 +91,7 @@ function Workspace() {
     <div>
       <Header>
         <RightMenu>
-          <span role="presentation" onClick={onClickUserProfile}>
+          <div role="presentation" onClick={onClickUserProfile}>
             <ProfileImg
               src={gravatar.url(userData.nickname, {
                 s: '28x',
@@ -159,7 +118,7 @@ function Workspace() {
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
               </Menu>
             )}
-          </span>
+          </div>
         </RightMenu>
       </Header>
 
@@ -175,6 +134,7 @@ function Workspace() {
             })}
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
+
         <Channels>
           <WorkspaceName onClick={toggleWorkspaceModal}>Slack</WorkspaceName>
           <MenuScroll>
@@ -184,7 +144,7 @@ function Workspace() {
               style={{ top: 95, left: 80 }}
               closeButton
             >
-              <WorkspaceModal>
+              <WorkspaceMenu>
                 <h2>Slack</h2>
                 <button type="button" onClick={onClickAddChannel}>
                   채널 만들기
@@ -192,10 +152,10 @@ function Workspace() {
                 <button type="button" onClick={onLogout}>
                   로그아웃
                 </button>
-              </WorkspaceModal>
+              </WorkspaceMenu>
             </Menu>
             {channelData?.map((v) => (
-              <div>{v.name}</div>
+              <div key={v.id}>{v.name}</div>
             ))}
           </MenuScroll>
         </Channels>
@@ -207,24 +167,9 @@ function Workspace() {
         </Chats>
       </WorkspaceWrapper>
 
-      <Modal show={showCreateWorkspaceModal} onCloseModal={onCloseModal}>
-        <form onSubmit={onCreateWorkspace}>
-          <Label id="workspace-label">
-            <span>워크스페이스 이름</span>
-            <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace} />
-          </Label>
-          <Label id="workspace-url-label">
-            <span>워크스페이스 url</span>
-            <Input id="workspace-url" value={newUrl} onChange={onChangeNewUrl} />
-          </Label>
-          <Button type="submit">생성하기</Button>
-        </form>
-      </Modal>
-      <CreateChannelModal
-        show={showCreateChannelModal}
-        onCloseModal={onCloseModal}
-        setShowCreateChannelModal={setShowCreateChannelModal}
-      />
+      <WorkspaceModal show={showCreateWorkspaceModal} onCloseModal={onCloseModal} />
+
+      <ChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal} />
     </div>
   );
 }

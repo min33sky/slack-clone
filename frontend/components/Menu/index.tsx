@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, CSSProperties, SyntheticEvent, useCallback } from 'react';
+import React, { CSSProperties, useCallback } from 'react';
 import { CloseModalButton, CreateMenu } from './style';
 
 interface IProps {
@@ -6,12 +6,11 @@ interface IProps {
   style: CSSProperties;
   show: boolean;
   closeButton?: boolean;
-  onCloseModal: (e: SyntheticEvent) => void;
+  onCloseModal: (_e: React.MouseEvent) => void;
 }
 
 export default function Menu({ children, style, show, onCloseModal, closeButton }: IProps) {
-  const stopPropagation = useCallback((e: BaseSyntheticEvent) => {
-    console.log('클릭');
+  const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
   }, []);
 
@@ -21,7 +20,7 @@ export default function Menu({ children, style, show, onCloseModal, closeButton 
 
   return (
     <CreateMenu onClick={onCloseModal}>
-      <div style={style} onClick={stopPropagation}>
+      <div role="presentation" style={style} onClick={stopPropagation}>
         {closeButton && <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>}
         {children}
       </div>
