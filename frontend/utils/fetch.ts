@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+/**
+ * SWR Fetch Method
+ * @param url API URL
+ */
 function fetcher(url: string) {
   /**
    * ? withCredentials: true

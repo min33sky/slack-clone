@@ -10,7 +10,7 @@
     "strict": true,
     "resolveJsonModule": true,
 
-    // 모듈을 상대 주소로 불러오지 않게 설정
+    // 모듈을 상대 주소가 아닌 별칭으로 불러오게 설정
     "baseUrl": ".",
     "paths": {
       "@hooks/*": ["hooks/*"],

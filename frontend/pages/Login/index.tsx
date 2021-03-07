@@ -1,19 +1,17 @@
 import useInput from '@hooks/useInput';
+import useUserDataFetch from '@hooks/useUserDataFetch';
 import { Button, Container, Form, Input, Label, LinkContainer, Error } from '@pages/SignUp/style';
-import fetcher from '@utils/fetch';
 import axios from 'axios';
 import React, { useCallback, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import useSWR from 'swr';
 
 /**
  * 로그인 페이지
  * /login
  */
 export default function Login() {
-  const { data, revalidate } = useSWR('http://localhost:3095/api/users', fetcher, {
-    // dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
-  });
+  const { data, revalidate } = useUserDataFetch();
+
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -30,8 +28,7 @@ export default function Login() {
             withCredentials: true,
           }
         )
-        .then((response) => {
-          console.log(response.data);
+        .then((_response) => {
           revalidate(); // 다시 SWR 요청을 보낸다.
           // mutate(response.data, false); // ? 서버로 SWR 요청을 보내지않고 data 값을 교체한다
         })

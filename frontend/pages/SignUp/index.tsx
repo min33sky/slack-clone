@@ -2,8 +2,7 @@ import React, { useCallback, useState } from 'react';
 import useInput from '@hooks/useInput';
 import { Link, Redirect } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
-import useSWR from 'swr';
-import fetcher from '@utils/fetch';
+import useUserDataFetch from '@hooks/useUserDataFetch';
 import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } from './style';
 
 /**
@@ -11,10 +10,7 @@ import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } 
  * /signup
  */
 export default function SignUp() {
-  // 사용자 정보 fetch
-  const { data } = useSWR('http://localhost:3095/api/users', fetcher, {
-    dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
-  });
+  const { data } = useUserDataFetch();
 
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
@@ -52,8 +48,7 @@ export default function SignUp() {
             nickname,
             password,
           })
-          .then((response) => {
-            console.log(response);
+          .then((_response) => {
             setSignUpSuccess(true);
           })
           .catch((error: AxiosError) => {

@@ -9,6 +9,14 @@ interface IProps {
   onCloseModal: (_e: React.MouseEvent) => void;
 }
 
+/**
+ * 메뉴
+ * @param param0
+ * @param param0
+ * @param param0
+ * @param param0
+ * @param param0
+ */
 export default function Menu({ children, style, show, onCloseModal, closeButton }: IProps) {
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

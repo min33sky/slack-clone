@@ -1,13 +1,12 @@
 import Modal from '@components/Modal';
+import useChannelsFetch from '@hooks/useChannelsFetch';
 import useInput from '@hooks/useInput';
+import useUserDataFetch from '@hooks/useUserDataFetch';
 import { Button, Input, Label } from '@pages/SignUp/style';
-import { IChannel, IUser } from '@typings/db';
-import fetcher from '@utils/fetch';
 import axios, { AxiosError } from 'axios';
 import React, { useCallback } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'react-toastify';
-import useSWR from 'swr';
 
 interface IProps {
   show: boolean;
@@ -20,16 +19,13 @@ interface IProps {
  * @param onCloseModal 모달 종료 함수
  */
 export default function ChannelModal({ show, onCloseModal }: IProps) {
-  const { workspace } = useParams<{ workspace: string; channel: string }>();
+  const { workspace } = useParams<{ workspace: string }>();
 
-  // 사용자 정보 가져오기
-  const { data: userData } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
-
-  // 현재 채널 정보들을 가져온다
-  const { data, revalidate: revalidateChannel } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
-    fetcher
-  );
+  const { data: userData } = useUserDataFetch();
+  const { data: channelData, revalidate: revalidateChannel } = useChannelsFetch({
+    userData,
+    workspace,
+  });
 
   const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
 

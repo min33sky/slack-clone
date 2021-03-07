@@ -4,12 +4,14 @@ import React, { useCallback, useState } from 'react';
 import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import useSWR from 'swr';
 import gravatar from 'gravatar';
-import { IChannel, IUser } from '@typings/db';
+import { IChannel } from '@typings/db';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 
 import ChannelModal from '@components/ChannelModal';
 import WorkspaceModal from '@components/WorkspaceModal';
+import useUserDataFetch from '@hooks/useUserDataFetch';
+import useChannelsFetch from '@hooks/useChannelsFetch';
 import {
   AddButton,
   Channels,
@@ -31,19 +33,9 @@ const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 function Workspace() {
-  // 로그인 사용자 데이터 fetch
-  const { data: userData, mutate, revalidate } = useSWR<IUser | false>(
-    'http://localhost:3095/api/users',
-    fetcher
-  );
-
   const { workspace } = useParams<{ workspace: string }>();
-
-  // 워크스페이스에 속한 채널들을 fetch
-  const { data: channelData } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
-    fetcher
-  );
+  const { data: userData, mutate } = useUserDataFetch();
+  const { data: channelData } = useChannelsFetch({ userData, workspace });
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);

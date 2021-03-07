@@ -1,32 +1,27 @@
 import Modal from '@components/Modal';
+import useChannelsFetch from '@hooks/useChannelsFetch';
+import useUserDataFetch from '@hooks/useUserDataFetch';
 import { Button, Input, Label } from '@pages/SignUp/style';
-import { IChannel, IUser } from '@typings/db';
-import fetcher from '@utils/fetch';
 import axios, { AxiosError } from 'axios';
 import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'react-toastify';
-import useSWR from 'swr';
 
 interface IProps {
   show: boolean;
   onCloseModal: () => void;
 }
 
+/**
+ * 워크스페이스 모달
+ * @param show 모달 활성화 유무
+ * @param onCloseModal 모달 종료 함수
+ */
 export default function WorkspaceModal({ show, onCloseModal }: IProps) {
-  // 로그인 사용자 데이터 fetch
-  const { data: userData, revalidate } = useSWR<IUser | false>(
-    'http://localhost:3095/api/users',
-    fetcher
-  );
-
   const { workspace } = useParams<{ workspace: string }>();
 
-  // 워크스페이스에 속한 채널들을 fetch
-  const { data: channelData } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
-    fetcher
-  );
+  const { data: userData, revalidate } = useUserDataFetch();
+  const { data: channelData } = useChannelsFetch({ userData, workspace });
 
   const [newWorkspace, setNewWorkspace] = useState('');
   const [newUrl, setNewUrl] = useState('');
@@ -59,6 +54,7 @@ export default function WorkspaceModal({ show, onCloseModal }: IProps) {
     },
     [newUrl, newWorkspace, revalidate, onCloseModal]
   );
+
   const onChangeNewWorkspace = useCallback((e) => {
     setNewWorkspace(e.target.value);
   }, []);
