@@ -22,7 +22,7 @@ export default function Login() {
       setLogInError(false);
       axios
         .post(
-          'http://localhost:3095/api/users/login',
+          '/api/users/login',
           { email, password },
           {
             withCredentials: true,

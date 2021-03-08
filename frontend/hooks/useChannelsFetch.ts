@@ -2,7 +2,7 @@ import { IUser, IChannel } from '@typings/db';
 import useSWR from 'swr';
 import fetcher from '@utils/fetch';
 
-const API_URL = 'http://localhost:3095/api/workspaces';
+const API_URL = '/api/workspaces';
 
 interface Iprops {
   userData: IUser | false | undefined;

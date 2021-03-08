@@ -2,7 +2,7 @@ import { IUser } from '@typings/db';
 import useSWR from 'swr';
 import fetcher from '@utils/fetch';
 
-const API_URL = 'http://localhost:3095/api/users';
+const API_URL = '/api/users';
 
 /**
  * SWR User Data Fetch Hook

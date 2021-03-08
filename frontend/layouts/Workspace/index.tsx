@@ -1,10 +1,7 @@
-import fetcher from '@utils/fetch';
 import axios from 'axios';
 import React, { useCallback, useState } from 'react';
 import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
-import useSWR from 'swr';
 import gravatar from 'gravatar';
-import { IChannel } from '@typings/db';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 
@@ -12,6 +9,8 @@ import ChannelModal from '@components/ChannelModal';
 import WorkspaceModal from '@components/WorkspaceModal';
 import useUserDataFetch from '@hooks/useUserDataFetch';
 import useChannelsFetch from '@hooks/useChannelsFetch';
+import InviteChannelModal from '@components/InviteChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import {
   AddButton,
   Channels,
@@ -32,6 +31,9 @@ import {
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
+/**
+ * 워크스페이스
+ */
 function Workspace() {
   const { workspace } = useParams<{ workspace: string }>();
   const { data: userData, mutate } = useUserDataFetch();
@@ -41,10 +43,12 @@ function Workspace() {
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
 
   const onLogout = useCallback(() => {
     axios
-      .post('http://localhost:3095/api/users/logout', null, { withCredentials: true })
+      .post('/api/users/logout', null, { withCredentials: true })
       .then(() => mutate(false, false)); // ? mutate의 두 번째 인자 shouldRevalidate를 false로 설정하면 data값을 서버에 확인하지 않고 바꿀 수 있다.
   }, [mutate]);
 
@@ -62,6 +66,8 @@ function Workspace() {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
     setShowWorkspaceModal(false);
+    setShowInviteChannelModal(false);
+    setShowInviteWorkspaceModal(false);
   }, []);
 
   const toggleWorkspaceModal = useCallback((e) => {
@@ -73,7 +79,7 @@ function Workspace() {
     setShowCreateChannelModal(true);
   }, []);
 
-  //* ************************************************************************* */
+  //* **************************************************************************************/
 
   if (!userData) {
     return <Redirect to="/login" />;
@@ -160,8 +166,9 @@ function Workspace() {
       </WorkspaceWrapper>
 
       <WorkspaceModal show={showCreateWorkspaceModal} onCloseModal={onCloseModal} />
-
       <ChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal} />
+      <InviteChannelModal show={showInviteChannelModal} onCloseModal={onCloseModal} />
+      <InviteWorkspaceModal show={showInviteWorkspaceModal} onCloseModal={onCloseModal} />
     </div>
   );
 }

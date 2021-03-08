@@ -74,15 +74,15 @@ const config: webpack.Configuration = {
     publicPath: '/dist/',
   },
   devServer: {
-    historyApiFallback: true, // ? react router (서버는 localhost:3090 주소밖에 모르지만 이 설정을 통해 다른 주소를 받을 수 있음)
+    historyApiFallback: true, // ? react-router (서버는 localhost:3090 주소밖에 모르지만 이 설정을 통해 /xxx 와 같은 주소로 라우팅이 가능하다)
     port: 3090,
     publicPath: '/dist/',
-    // proxy: {
-    //   '/api/': {
-    //     target: 'http://localhost:3095',
-    //     changeOrigin: true,
-    //   },
-    // },
+    proxy: {
+      '/api/': {
+        target: 'http://localhost:3095',
+        changeOrigin: true,
+      },
+    },
   },
 };
 

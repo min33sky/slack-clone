@@ -33,7 +33,7 @@ export default function WorkspaceModal({ show, onCloseModal }: IProps) {
       if (!newUrl || !newUrl.trim()) return;
       axios
         .post(
-          'http://localhost:3095/api/workspaces',
+          '/api/workspaces',
           {
             workspace: newWorkspace,
             url: newUrl,

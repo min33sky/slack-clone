@@ -38,7 +38,7 @@ export default function ChannelModal({ show, onCloseModal }: IProps) {
 
       axios
         .post(
-          `http://localhost:3095/api/workspaces/${workspace}/channels`,
+          `/api/workspaces/${workspace}/channels`,
           {
             name: newChannel,
           },
