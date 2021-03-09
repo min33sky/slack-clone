@@ -1,15 +1,17 @@
 import { IUser } from '@typings/db';
-import useSWR from 'swr';
+import useSWR, { ConfigInterface } from 'swr';
 import fetcher from '@utils/fetch';
 
 const API_URL = '/api/users';
 
+interface IProps extends ConfigInterface {}
+
 /**
  * SWR User Data Fetch Hook
- * dedupingInterval: 20000, // ? 정해진 시간동안 요청을 보내지 않고 캐시된 값을 사용한다
+ * @param options Fetch Options
  */
-export default function useUserDataFetch() {
-  const { data, mutate, revalidate } = useSWR<IUser | false>(API_URL, fetcher);
+export default function useUserDataFetch({ ...props }: IProps) {
+  const { data, mutate, revalidate } = useSWR<IUser>(API_URL, fetcher, { ...props });
 
   return {
     data,

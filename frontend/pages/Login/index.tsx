@@ -10,7 +10,7 @@ import { Link, Redirect } from 'react-router-dom';
  * /login
  */
 export default function Login() {
-  const { data, revalidate } = useUserDataFetch();
+  const { data, revalidate } = useUserDataFetch({});
 
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');

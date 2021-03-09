@@ -10,7 +10,7 @@ import { Container, Form, Label, Input, Button, LinkContainer, Error, Success } 
  * /signup
  */
 export default function SignUp() {
-  const { data } = useUserDataFetch();
+  const { data } = useUserDataFetch({});
 
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');

@@ -9,7 +9,7 @@ interface IProps {
 
 /**
  * 모달
- * @param show 모달을 보여줄 지 유무
+ * @param show 모달을 활성화 유무
  * @param onCloseModal 모달 종료 함수
  */
 export default function Modal({ show, onCloseModal, children }: IProps) {

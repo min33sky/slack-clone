@@ -23,7 +23,7 @@ interface IProps {
 export default function InviteChannelModal({ show, onCloseModal }: IProps) {
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
 
-  const { data: userData } = useUserDataFetch();
+  const { data: userData } = useUserDataFetch({});
 
   // ? 현 채널에 접속해 있는 사용자들의 정보를 가져온다.
   const { revalidate: revalidateMembers } = useSWR<IUser[]>(
@@ -50,7 +50,7 @@ export default function InviteChannelModal({ show, onCloseModal }: IProps) {
           revalidateMembers();
           setNewMember('');
           onCloseModal();
-          toast.success('현재 채널로 초대했습니다. :)', { position: 'bottom-center' });
+          toast.success('현 채널로 초대했습니다. :)', { position: 'bottom-center' });
         })
         .catch((error: AxiosError) => {
           console.dir(error);

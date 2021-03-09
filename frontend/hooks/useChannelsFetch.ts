@@ -6,7 +6,7 @@ const API_URL = '/api/workspaces';
 
 interface Iprops {
   userData: IUser | false | undefined;
-  workspace: string;
+  workspace: string | undefined;
 }
 
 /**
@@ -16,7 +16,7 @@ interface Iprops {
  * @param workspace 현재 workspace
  */
 export default function useChannelsFetch({ userData, workspace }: Iprops) {
-  const { data, mutate, revalidate } = useSWR<IChannel[] | null>(
+  const { data, mutate, revalidate } = useSWR<IChannel[]>(
     userData ? `${API_URL}/${workspace}/channels` : null,
     fetcher
   );

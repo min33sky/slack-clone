@@ -17,20 +17,8 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier", "import"],
+  "plugins": ["react", "react-hooks", "@typescript-eslint"],
   "rules": {
-    "prettier/prettier": [
-      "warn",
-      {
-        "singleQuote": true,
-        "jsxSingleQuote": false,
-        "endOfLine": "auto",
-        "trailingComma": "es5",
-        "parser": "flow",
-        "arrowParens": "always",
-        "printWidth": 100
-      }
-    ],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
     // import react from 'react' was used before it was defined.(no-use-before-define)
     "no-use-before-define": "off",

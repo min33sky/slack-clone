@@ -20,7 +20,7 @@ interface IProps {
 export default function WorkspaceModal({ show, onCloseModal }: IProps) {
   const { workspace } = useParams<{ workspace: string }>();
 
-  const { data: userData, revalidate } = useUserDataFetch();
+  const { data: userData, revalidate } = useUserDataFetch({});
   const { data: channelData } = useChannelsFetch({ userData, workspace });
 
   const [newWorkspace, setNewWorkspace] = useState('');

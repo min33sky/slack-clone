@@ -21,7 +21,7 @@ interface IProps {
 export default function ChannelModal({ show, onCloseModal }: IProps) {
   const { workspace } = useParams<{ workspace: string }>();
 
-  const { data: userData } = useUserDataFetch();
+  const { data: userData } = useUserDataFetch({});
   const { data: channelData, revalidate: revalidateChannel } = useChannelsFetch({
     userData,
     workspace,

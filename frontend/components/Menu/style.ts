@@ -8,7 +8,18 @@ export const CreateMenu = styled.div`
   bottom: 0;
   z-index: 1000;
   background-color: rgba(0, 0, 0, 0.12);
+
+  /* 메뉴 CSS */
   & > div {
+    @font-face {
+      font-family: 'MaplestoryOTFBold';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFBold.woff')
+        format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    font-family: 'MaplestoryOTFBold';
+
     position: absolute;
     display: inline-block;
     --saf-0: rgba(var(--sk_foreground_low, 29, 28, 29), 0.13);

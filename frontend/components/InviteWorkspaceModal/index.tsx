@@ -23,7 +23,7 @@ interface IProps {
 export default function InviteWorkspaceModal({ show, onCloseModal }: IProps) {
   const { workspace } = useParams<{ workspace: string }>();
 
-  const { data: userData } = useUserDataFetch();
+  const { data: userData } = useUserDataFetch({});
 
   // ? 현 워크스페이스에 접속해 있는 사용자들의 정보를 가져온다.
   const { revalidate: revalidateMembers } = useSWR<IUser[]>(

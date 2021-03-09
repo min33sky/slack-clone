@@ -11,6 +11,8 @@ import useUserDataFetch from '@hooks/useUserDataFetch';
 import useChannelsFetch from '@hooks/useChannelsFetch';
 import InviteChannelModal from '@components/InviteChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
+import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 import {
   AddButton,
   Channels,
@@ -36,7 +38,7 @@ const DirectMessage = loadable(() => import('@pages/DirectMessage'));
  */
 function Workspace() {
   const { workspace } = useParams<{ workspace: string }>();
-  const { data: userData, mutate } = useUserDataFetch();
+  const { data: userData, revalidate } = useUserDataFetch({});
   const { data: channelData } = useChannelsFetch({ userData, workspace });
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -47,10 +49,8 @@ function Workspace() {
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
 
   const onLogout = useCallback(() => {
-    axios
-      .post('/api/users/logout', null, { withCredentials: true })
-      .then(() => mutate(false, false)); // ? mutate의 두 번째 인자 shouldRevalidate를 false로 설정하면 data값을 서버에 확인하지 않고 바꿀 수 있다.
-  }, [mutate]);
+    axios.post('/api/users/logout', null, { withCredentials: true }).then(() => revalidate());
+  }, [revalidate]);
 
   const onClickUserProfile = useCallback((e: React.MouseEvent) => {
     // ? 이벤트 버블링을 막아서 메뉴 상태 변경이 계속 호출되는 것을 막는다.
@@ -152,9 +152,9 @@ function Workspace() {
                 </button>
               </WorkspaceMenu>
             </Menu>
-            {channelData?.map((v) => (
-              <div key={v.id}>{v.name}</div>
-            ))}
+
+            <ChannelList />
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>
