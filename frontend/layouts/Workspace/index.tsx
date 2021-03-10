@@ -79,6 +79,10 @@ function Workspace() {
     setShowCreateChannelModal(true);
   }, []);
 
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
+  }, []);
+
   //* **************************************************************************************/
 
   if (!userData) {
@@ -144,6 +148,9 @@ function Workspace() {
             >
               <WorkspaceMenu>
                 <h2>Slack</h2>
+                <button type="button" onClick={onClickInviteWorkspace}>
+                  워크스페이스에 사용자 초대
+                </button>
                 <button type="button" onClick={onClickAddChannel}>
                   채널 만들기
                 </button>
@@ -157,6 +164,7 @@ function Workspace() {
             <DMList />
           </MenuScroll>
         </Channels>
+
         <Chats>
           <Switch>
             <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
