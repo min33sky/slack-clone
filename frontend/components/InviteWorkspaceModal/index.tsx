@@ -50,7 +50,9 @@ export default function InviteWorkspaceModal({ show, onCloseModal }: IProps) {
           revalidateMembers();
           setNewMember('');
           onCloseModal();
-          toast.success('현 워크스페이스로 초대했습니다. :)', { position: 'bottom-center' });
+          toast.success('현 워크스페이스로 초대했습니다. :)', {
+            position: 'bottom-center',
+          });
         })
         .catch((error: AxiosError) => {
           console.dir(error);

@@ -109,7 +109,10 @@ function Workspace() {
               >
                 <ProfileModal>
                   <img
-                    src={gravatar.url(userData.nickname, { s: '36px', d: 'retro' })}
+                    src={gravatar.url(userData.nickname, {
+                      s: '36px',
+                      d: 'retro',
+                    })}
                     alt={userData.nickname}
                   />
                   <div>
