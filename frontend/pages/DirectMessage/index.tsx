@@ -9,6 +9,7 @@ import ChatBox from '@components/ChatBox';
 import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
+import useSocket from '@hooks/useSocket';
 import { Header, Container } from './style';
 
 /**
@@ -65,7 +66,7 @@ export default function DirectMessage() {
         <span>{userData.nickname}</span>
       </Header>
 
-      <ChatList />
+      <ChatList chatData={chatData || []} />
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} placeholder="" />
     </Container>
   );

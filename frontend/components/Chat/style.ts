@@ -1,4 +1,6 @@
-export const ChatWrapper = styled.div`
+import styled from '@emotion/styled';
+
+const ChatWrapper = styled.div`
   display: flex;
   padding: 8px 20px;
   &:hover {
@@ -14,3 +16,5 @@ export const ChatWrapper = styled.div`
     }
   }
 `;
+
+export default ChatWrapper;

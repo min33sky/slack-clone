@@ -1,7 +1,8 @@
+import useSocket from '@hooks/useSocket';
 import useUserDataFetch from '@hooks/useUserDataFetch';
-import { IUser, IUserWithOnline } from '@typings/db';
+import { IDM, IUser, IUserWithOnline } from '@typings/db';
 import fetcher from '@utils/fetch';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
@@ -23,6 +24,38 @@ export default function DMList() {
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [countList, setCountList] = useState<{ [key: string]: number }>({});
   const [onlineList, setOnlineList] = useState<number[]>([]);
+
+  const [socket] = useSocket(workspace);
+
+  const onMessage = (data: IDM) => {
+    console.log('dm왔다', data);
+    setCountList((list) => {
+      return {
+        ...list,
+        [data.SenderId]: list[data.SenderId] ? list[data.SenderId] + 1 : 1,
+      };
+    });
+  };
+
+  useEffect(() => {
+    console.log('DMList: workspace 바뀜', workspace);
+    setOnlineList([]);
+    setCountList({});
+  }, [workspace]);
+
+  useEffect(() => {
+    socket?.on('onlineList', (data: number[]) => {
+      console.log('온라인 리스트', data);
+      setOnlineList(data);
+    });
+    // socket?.on('dm', onMessage);
+    // console.log('socket on dm', socket?.hasListeners('dm'), socket);
+    return () => {
+      // socket?.off('dm', onMessage);
+      // console.log('socket off dm', socket?.hasListeners('dm'));
+      socket?.off('onlineList');
+    };
+  }, [socket]);
 
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);

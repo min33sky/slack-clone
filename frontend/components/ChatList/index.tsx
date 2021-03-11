@@ -1,10 +1,18 @@
+import Chat from '@components/Chat';
+import { IDM } from '@typings/db';
 import React from 'react';
 import { ChatZone, Section } from './style';
 
-export default function ChatList() {
+interface IProps {
+  chatData: IDM[];
+}
+
+export default function ChatList({ chatData }: IProps) {
   return (
     <ChatZone>
-      <Section>section</Section>
+      {chatData.map((chat: IDM) => (
+        <Chat key={chat.id} data={chat} />
+      ))}
     </ChatZone>
   );
 }

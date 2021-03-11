@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import gravatar from 'gravatar';
 import loadable from '@loadable/component';
@@ -13,6 +13,8 @@ import InviteChannelModal from '@components/InviteChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import DMList from '@components/DMList';
 import ChannelList from '@components/ChannelList';
+import useSocket from '@hooks/useSocket';
+import { IChannel } from '@typings/db';
 import {
   AddButton,
   Channels,
@@ -47,6 +49,21 @@ function Workspace() {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
+
+  const [socket, disconnect] = useSocket(workspace);
+
+  useEffect(() => {
+    if (socket && channelData && userData) {
+      console.log(socket);
+      socket.emit('login', { id: userData.id, channels: channelData.map((v: IChannel) => v.id) });
+    }
+  }, [socket, channelData, userData]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
 
   const onLogout = useCallback(() => {
     axios.post('/api/users/logout', null, { withCredentials: true }).then(() => revalidate());
