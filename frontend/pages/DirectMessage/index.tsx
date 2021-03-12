@@ -10,7 +10,8 @@ import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import makeSection from '@utils/makeSection';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from 'react-custom-scrollbars';
+import useSocket from '@hooks/useSocket';
 import { Header, Container } from './style';
 
 /**
@@ -22,10 +23,12 @@ export default function DirectMessage() {
   const { data: userData } = useSWR<IUser>(`/api/workspaces/${workspace}/users/${id}`, fetcher);
   const { data: myData } = useUserDataFetch({});
 
+  const [socket] = useSocket(workspace);
+
   const [chat, onChangeChat, setChat] = useInput('');
 
   // 인피니티 스크롤링 관련
-  const { data: chatData, revalidate, setSize } = useSWRInfinite<IDM[]>(
+  const { data: chatData, mutate: mutateChat, revalidate, setSize } = useSWRInfinite<IDM[]>(
     (index) => `/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=${index + 1}`,
     fetcher
   );
@@ -40,7 +43,26 @@ export default function DirectMessage() {
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      if (chat?.trim()) {
+      if (chat?.trim() && chatData && userData && myData) {
+        // Optimistic UI 적용
+        const savedChat = chat;
+        mutateChat((prevChatData) => {
+          prevChatData?.[0].unshift({
+            id: (chatData[0][0]?.id || 0) + 1,
+            content: savedChat,
+            SenderId: myData.id,
+            Sender: myData,
+            ReceiverId: userData.id,
+            Receiver: userData,
+            createdAt: new Date(),
+          });
+
+          return prevChatData;
+        }, false).then(() => {
+          setChat('');
+          scrollbarRef.current?.scrollToBottom();
+        });
+
         axios
           .post(
             `/api/workspaces/${workspace}/dms/${id}/chats`,
@@ -53,21 +75,57 @@ export default function DirectMessage() {
           )
           .then(() => {
             revalidate();
-            setChat('');
-            scrollbarRef.current?.scrollToBottom();
           })
           .catch(console.error);
       }
     },
-    [setChat, id, chat, workspace, revalidate]
+    [setChat, id, chat, workspace, revalidate, chatData, mutateChat, myData, userData]
   );
 
-  // 로딩 시 스크롤바 제일 아래로
+  const onMessage = useCallback(
+    (data: IDM) => {
+      console.log('시ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ발');
+      if (data.SenderId === Number(id) && myData?.id !== Number(id)) {
+        mutateChat((chatData) => {
+          chatData?.[0].unshift(data);
+          return chatData;
+        }, false).then(() => {
+          if (scrollbarRef.current) {
+            if (
+              scrollbarRef.current.getScrollHeight() <
+              scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + 150
+            ) {
+              console.log('scrollToBottom!', scrollbarRef.current?.getValues());
+              scrollbarRef.current.scrollToBottom();
+            } else {
+              // toast.success('새 메시지가 도착했습니다.', {
+              //   onClick() {
+              //     scrollbarRef.current?.scrollToBottom();
+              //   },
+              //   closeOnClick: true,
+              // });
+            }
+          }
+        });
+      }
+    },
+    [id, mutateChat, myData]
+  );
+
   useEffect(() => {
+    socket?.on('dm', onMessage);
+    return () => {
+      socket?.off('dm', onMessage);
+    };
+  }, [socket, id, myData, onMessage]);
+
+  // ? 로딩 시 스크롤바 제일 아래로
+  useEffect(() => {
+    console.log('챗데이터', chatData);
     if (chatData?.length === 1) {
       scrollbarRef.current?.scrollToBottom();
     }
-  }, [chatData?.length]);
+  }, [chatData]);
 
   // TODO: 채팅 입력시마다 계속 함수 호출되므로 useCallback으로 처리해야 함
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
@@ -93,6 +151,7 @@ export default function DirectMessage() {
         isEmpty={isEmpty}
         isReachingEnd={isReachingEnd}
       />
+
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} placeholder="" />
     </Container>
   );

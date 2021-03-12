@@ -1,7 +1,7 @@
 import Chat from '@components/Chat';
 import { IDM } from '@typings/db';
-import React, { forwardRef, useCallback } from 'react';
-import { Scrollbars } from 'react-custom-scrollbars';
+import React, { forwardRef, MutableRefObject, useCallback } from 'react';
+import { positionValues, Scrollbars } from 'react-custom-scrollbars';
 import { ChatZone, Section, StickyHeader } from './style';
 
 interface IProps {
@@ -18,15 +18,22 @@ interface IProps {
 const ChatList = forwardRef<Scrollbars, IProps>(
   ({ chatSections, setSize, isEmpty, isReachingEnd }: IProps, ref) => {
     const onScroll = useCallback(
-      (values) => {
+      (values: positionValues) => {
         if (values.scrollTop === 0 && !isReachingEnd) {
           console.log('가장 위');
           setSize((prevSize) => prevSize + 1).then(() => {
             // 스크롤 위치 유지
+            const current = (ref as MutableRefObject<Scrollbars>)?.current;
+            console.log('current', current);
+            if (current) {
+              current.scrollTop(current.getScrollHeight() - values.scrollHeight);
+              console.log('getScrollHeight: ', current.getScrollHeight());
+              console.log('values.scrollHeight: ', values.scrollHeight);
+            }
           });
         }
       },
-      [isReachingEnd, setSize]
+      [isReachingEnd, setSize, ref]
     );
 
     return (
