@@ -1,19 +1,21 @@
 import useUserDataFetch from '@hooks/useUserDataFetch';
 import fetcher from '@utils/fetch';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
-import useSWR from 'swr';
+import useSWR, { useSWRInfinite } from 'swr';
 import gravatar from 'gravatar';
 import { IDM, IUser } from '@typings/db';
 import ChatBox from '@components/ChatBox';
 import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
-import useSocket from '@hooks/useSocket';
+import makeSection from '@utils/makeSection';
+import Scrollbars from 'react-custom-scrollbars';
 import { Header, Container } from './style';
 
 /**
  * 다이렉트 메세지 페이지
+ * /workspace/:workspace/dm/:userID
  */
 export default function DirectMessage() {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
@@ -22,15 +24,22 @@ export default function DirectMessage() {
 
   const [chat, onChangeChat, setChat] = useInput('');
 
-  const { data: chatData, revalidate } = useSWR<IDM[]>(
-    `/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
+  // 인피니티 스크롤링 관련
+  const { data: chatData, revalidate, setSize } = useSWRInfinite<IDM[]>(
+    (index) => `/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=${index + 1}`,
     fetcher
   );
+
+  const isEmpty = chatData?.[0]?.length === 0;
+  const isReachingEnd =
+    isEmpty || (chatData && chatData[chatData.length - 1]?.length < 20) || false;
+
+  // 채팅 리스트의 스크롤바 제어를 위한 Ref
+  const scrollbarRef = useRef<Scrollbars>(null);
 
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      console.log('submit', chat);
       if (chat?.trim()) {
         axios
           .post(
@@ -45,12 +54,23 @@ export default function DirectMessage() {
           .then(() => {
             revalidate();
             setChat('');
+            scrollbarRef.current?.scrollToBottom();
           })
           .catch(console.error);
       }
     },
     [setChat, id, chat, workspace, revalidate]
   );
+
+  // 로딩 시 스크롤바 제일 아래로
+  useEffect(() => {
+    if (chatData?.length === 1) {
+      scrollbarRef.current?.scrollToBottom();
+    }
+  }, [chatData?.length]);
+
+  // TODO: 채팅 입력시마다 계속 함수 호출되므로 useCallback으로 처리해야 함
+  const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
 
   if (!userData || !myData) {
     return null;
@@ -66,7 +86,13 @@ export default function DirectMessage() {
         <span>{userData.nickname}</span>
       </Header>
 
-      <ChatList chatData={chatData || []} />
+      <ChatList
+        chatSections={chatSections}
+        ref={scrollbarRef}
+        setSize={setSize}
+        isEmpty={isEmpty}
+        isReachingEnd={isReachingEnd}
+      />
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} placeholder="" />
     </Container>
   );
