@@ -26,6 +26,9 @@ export interface IChat {
   Channel: IChannel;
 }
 
+/**
+ * 다이렉트 메세지 타입
+ */
 export interface IDM {
   id: number;
   SenderId: number;

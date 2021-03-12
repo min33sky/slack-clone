@@ -92,6 +92,7 @@ export default function ChatBox({ chat, onSubmitForm, onChangeChat, placeholder 
             renderSuggestion={renderSuggestion}
           />
         </MentionsTextarea>
+
         <Toolbox>
           <SendButton
             className={`c-button-unstyled c-icon_button c-icon_button--light c-icon_button--size_medium c-texty_input__button c-texty_input__button--send${
