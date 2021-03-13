@@ -42,6 +42,7 @@ const config: webpack.Configuration = {
             '@babel/preset-typescript',
           ],
           env: {
+            // @emotion/babel-plugin, react-hot-loading
             development: {
               plugins: ['@emotion', require.resolve('react-refresh/babel')],
             },
