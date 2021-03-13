@@ -44,7 +44,7 @@ export default function DirectMessage() {
     (e) => {
       e.preventDefault();
       if (chat?.trim() && chatData && userData && myData) {
-        // Optimistic UI 적용
+        // ?  Optimistic UI 적용 (화면에 일단 반영하고 서버로 보내기)
         const savedChat = chat;
         mutateChat((prevChatData) => {
           prevChatData?.[0].unshift({
@@ -58,10 +58,14 @@ export default function DirectMessage() {
           });
 
           return prevChatData;
-        }, false).then(() => {
-          setChat('');
-          scrollbarRef.current?.scrollToBottom();
-        });
+        }, false)
+          .then(() => {
+            setChat('');
+            scrollbarRef.current?.scrollToBottom();
+          })
+          .finally(() => {
+            console.log('메세지를 전송했어요');
+          });
 
         axios
           .post(
@@ -82,31 +86,43 @@ export default function DirectMessage() {
     [setChat, id, chat, workspace, revalidate, chatData, mutateChat, myData, userData]
   );
 
+  // DM 이벤트 핸들러
   const onMessage = useCallback(
     (data: IDM) => {
-      console.log('시ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ발');
+      console.log('***** DM이 도착했습니다....... *****');
+      // ? 내가 보낸 메세지는 제외한다. (이미 화면에 표시된 상태기 때문에)
+      // ? id는 DM 보낼 상대방의 ID이다.
       if (data.SenderId === Number(id) && myData?.id !== Number(id)) {
-        mutateChat((chatData) => {
-          chatData?.[0].unshift(data);
-          return chatData;
-        }, false).then(() => {
-          if (scrollbarRef.current) {
-            if (
-              scrollbarRef.current.getScrollHeight() <
-              scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + 150
-            ) {
-              console.log('scrollToBottom!', scrollbarRef.current?.getValues());
-              scrollbarRef.current.scrollToBottom();
-            } else {
-              // toast.success('새 메시지가 도착했습니다.', {
-              //   onClick() {
-              //     scrollbarRef.current?.scrollToBottom();
-              //   },
-              //   closeOnClick: true,
-              // });
+        mutateChat((currentChatData) => {
+          currentChatData?.[0].unshift(data); // 가장 최신 데이터로 삽입한다.
+          return currentChatData;
+        }, false)
+          .then(() => {
+            // ? 특정 높이 이하일 때만 스크롤바를 아래로 내린다. (버그 좀 있음 :<)
+            if (scrollbarRef.current) {
+              if (
+                scrollbarRef.current.getScrollHeight() <
+                scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + 150
+              ) {
+                console.log('scrollToBottom!', scrollbarRef.current?.getValues());
+                setTimeout(() => {
+                  scrollbarRef.current?.scrollToBottom();
+                  console.log('내려갓');
+                }, 50);
+              } else {
+                // toast.success('새 메시지가 도착했습니다.', {
+                //   onClick() {
+                //     scrollbarRef.current?.scrollToBottom();
+                //   },
+                //   closeOnClick: true,
+                // });
+              }
             }
-          }
-        });
+          })
+          .finally(() => {
+            console.log('진짜 내려가');
+            scrollbarRef.current?.scrollToBottom();
+          });
       }
     },
     [id, mutateChat, myData]

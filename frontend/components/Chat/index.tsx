@@ -1,4 +1,4 @@
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import React, { useMemo } from 'react';
 import gravatar from 'gravatar';
 import dayjs from 'dayjs';
@@ -7,7 +7,7 @@ import { Link, useParams } from 'react-router-dom';
 import ChatWrapper from './style';
 
 interface IProps {
-  data: IDM;
+  data: IDM | IChat;
 }
 
 /**
@@ -16,7 +16,7 @@ interface IProps {
  */
 function Chat({ data }: IProps) {
   const { workspace } = useParams<{ workspace: string }>();
-  const user = data.Sender;
+  const user = 'Sender' in data ? data.Sender : data.User;
 
   /**
    * ? 채팅 메세지의 닉네임 클릭시 DM 보내기 처리
@@ -28,7 +28,7 @@ function Chat({ data }: IProps) {
         input: data.content,
         pattern: /@\[(.+?)]\((\d+?)\)|\n/g,
         decorator(match, index) {
-          console.log(match, data.content);
+          console.log('채팅메세지 정규표현식 적용: ', match, data.content);
           const arr: string[] | null = match.match(/@\[(.+?)]\((\d+?)\)/)!;
           // ? @닉네임(아이디)를 링크태그로 설정
           if (arr) {

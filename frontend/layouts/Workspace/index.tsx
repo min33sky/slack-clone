@@ -112,7 +112,7 @@ function Workspace() {
         <RightMenu>
           <div role="presentation" onClick={onClickUserProfile}>
             <ProfileImg
-              src={gravatar.url(userData.nickname, {
+              src={gravatar.url(userData.email, {
                 s: '28x',
                 d: 'retro',
               })}

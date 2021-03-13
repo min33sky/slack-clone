@@ -31,6 +31,7 @@ export default function ChatBox({ chat, onSubmitForm, onChangeChat, placeholder 
     fetcher
   );
 
+  // ? Autosize를 적용 할 Ref
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -39,6 +40,11 @@ export default function ChatBox({ chat, onSubmitForm, onChangeChat, placeholder 
     }
   }, []);
 
+  /**
+   * 키보드 핸들러
+   * - Enter; 메세지 전송
+   * - Shift + Enter: 줄 바꿈
+   */
   const onKeyDownChat = useCallback(
     (e) => {
       if (e.key === 'Enter') {
@@ -51,6 +57,9 @@ export default function ChatBox({ chat, onSubmitForm, onChangeChat, placeholder 
     [onSubmitForm]
   );
 
+  /**
+   * React-Mention 핸들러
+   */
   const renderSuggestion = useCallback(
     (
       suggestion: SuggestionDataItem,

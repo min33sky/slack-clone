@@ -1,12 +1,12 @@
 import Chat from '@components/Chat';
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import React, { forwardRef, MutableRefObject, useCallback } from 'react';
 import { positionValues, Scrollbars } from 'react-custom-scrollbars';
 import { ChatZone, Section, StickyHeader } from './style';
 
 interface IProps {
-  chatSections: { [key: string]: IDM[] };
-  setSize: (_f: (_size: number) => number) => Promise<IDM[][] | undefined>;
+  chatSections: { [key: string]: (IDM | IChat)[] };
+  setSize: (_f: (_size: number) => number) => Promise<IDM[][] | IChat[][] | undefined>;
   isEmpty: boolean;
   isReachingEnd: boolean;
 }
@@ -17,24 +17,33 @@ interface IProps {
  */
 const ChatList = forwardRef<Scrollbars, IProps>(
   ({ chatSections, setSize, isEmpty, isReachingEnd }: IProps, ref) => {
+    /**
+     * 스크롤 제어 핸들러
+     */
     const onScroll = useCallback(
       (values: positionValues) => {
+        // 이전 데이터가 존재할 시 데이터를 불러온다.
         if (values.scrollTop === 0 && !isReachingEnd) {
           console.log('가장 위');
-          setSize((prevSize) => prevSize + 1).then(() => {
-            // 스크롤 위치 유지
-            const current = (ref as MutableRefObject<Scrollbars>)?.current;
-            console.log('current', current);
-            if (current) {
-              current.scrollTop(current.getScrollHeight() - values.scrollHeight);
-              console.log('getScrollHeight: ', current.getScrollHeight());
-              console.log('values.scrollHeight: ', values.scrollHeight);
-            }
-          });
+          setSize((prevSize) => prevSize + 1)
+            .then(() => {
+              // ? 데이터를 로드해도 현재 스크롤 위치를 유지시킨다.
+              const current = (ref as MutableRefObject<Scrollbars>)?.current;
+              console.log('current', current);
+              if (current) {
+                current.scrollTop(current.getScrollHeight() - values.scrollHeight);
+                console.log('getScrollHeight: ', current.getScrollHeight());
+                console.log('values.scrollHeight: ', values.scrollHeight);
+                console.log('결과: ', current.getScrollHeight() - values.scrollHeight);
+              }
+            })
+            .catch((e) => console.log(e));
         }
       },
       [isReachingEnd, setSize, ref]
     );
+
+    // console.log('!@#!@#!@#!@#!@#!@# 아이디 순으로 정렬해야할 듯???????', chatSections);
 
     return (
       <ChatZone>

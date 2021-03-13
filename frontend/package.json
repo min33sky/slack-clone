@@ -32,7 +32,8 @@
     "socket.io-client": "^2.4.0",
     "swr": "^0.4.2",
     "ts-node": "^9.1.1",
-    "webpack": "^5.24.4"
+    "webpack": "^5.24.4",
+    "webpack-bundle-analyzer": "^4.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
@@ -43,12 +44,13 @@
     "@types/loadable__component": "^5.13.3",
     "@types/node": "^14.14.33",
     "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.2",
     "@types/react-custom-scrollbars": "^4.0.7",
+    "@types/react-dom": "^17.0.2",
     "@types/react-mentions": "^4.1.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/socket.io-client": "^1.4.35",
     "@types/webpack": "^4.41.26",
+    "@types/webpack-bundle-analyzer": "^3.9.1",
     "@types/webpack-dev-server": "^3.11.2",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
