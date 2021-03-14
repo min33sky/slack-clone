@@ -107,7 +107,7 @@ function Workspace() {
   }
 
   return (
-    <div>
+    <>
       <Header>
         <RightMenu>
           <div role="presentation" onClick={onClickUserProfile}>
@@ -193,11 +193,12 @@ function Workspace() {
         </Chats>
       </WorkspaceWrapper>
 
+      {/* 모달 컴포넌트 */}
       <WorkspaceModal show={showCreateWorkspaceModal} onCloseModal={onCloseModal} />
       <ChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal} />
       <InviteChannelModal show={showInviteChannelModal} onCloseModal={onCloseModal} />
       <InviteWorkspaceModal show={showInviteWorkspaceModal} onCloseModal={onCloseModal} />
-    </div>
+    </>
   );
 }
 

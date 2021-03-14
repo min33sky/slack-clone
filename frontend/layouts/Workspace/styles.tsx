@@ -72,6 +72,9 @@ export const Workspaces = styled.div`
   padding: 15px 0 0;
 `;
 
+/**
+ * 채널 리스트 & 다이렉트 메세지의 스타일 래퍼 컴포넌트
+ */
 export const Channels = styled.nav`
   width: 260px;
   display: inline-flex;
@@ -79,6 +82,7 @@ export const Channels = styled.nav`
   background: #3f0e40;
   color: rgb(188, 171, 188);
   vertical-align: top;
+
   & a {
     padding-left: 36px;
     color: inherit;
@@ -87,14 +91,19 @@ export const Channels = styled.nav`
     line-height: 28px;
     display: flex;
     align-items: center;
+
     &.selected {
       color: white;
     }
   }
+
+  /* 채팅 리스트 글자 굵게 표시 */
   & .bold {
     color: white;
     font-weight: bold;
   }
+
+  /* 채팅 리스트의 메세지 개수 표시 */
   & .count {
     margin-left: auto;
     background: #cd2553;

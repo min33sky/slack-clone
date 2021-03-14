@@ -10,6 +10,7 @@ import { Link, Redirect } from 'react-router-dom';
  * /login
  */
 export default function Login() {
+  // 현재 사용자의 정보를 가져온다.
   const { data, revalidate } = useUserDataFetch({});
 
   const [logInError, setLogInError] = useState(false);
@@ -29,8 +30,7 @@ export default function Login() {
           }
         )
         .then((_response) => {
-          revalidate(); // 다시 SWR 요청을 보낸다.
-          // mutate(response.data, false); // ? 서버로 SWR 요청을 보내지않고 data 값을 교체한다
+          revalidate(); // 다시 SWR 요청을 보내서 사용자의 정보를 가져온다.
         })
         .catch((e) => {
           setLogInError(e.response?.data?.statusCode === 401);
@@ -50,6 +50,7 @@ export default function Login() {
   return (
     <Container>
       <header>Sleact</header>
+
       <Form onSubmit={onSubmit}>
         <Label id="email-label">
           <span>이메일 주소</span>
@@ -57,6 +58,7 @@ export default function Login() {
             <Input type="email" id="email" name="email" value={email} onChange={onChangeEmail} />
           </div>
         </Label>
+
         <Label id="password-label">
           <span>비밀번호</span>
           <div>
@@ -70,8 +72,10 @@ export default function Login() {
           </div>
           {logInError && <Error>이메일과 비밀번호 조합이 일치하지 않습니다.</Error>}
         </Label>
+
         <Button type="submit">로그인</Button>
       </Form>
+
       <LinkContainer>
         아직 회원이 아니신가요?&nbsp;
         <Link to="/signup">회원가입 하러가기</Link>

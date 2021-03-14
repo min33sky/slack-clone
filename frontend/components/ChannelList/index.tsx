@@ -8,7 +8,6 @@ import { NavLink, useLocation, useParams } from 'react-router-dom';
 
 /**
  * 채널 리스트
- * TODO: 현재 채널에서 메세지를 받을 땐 메세지 숫자를 표시하지 말자
  */
 export default function ChannelList() {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -18,6 +17,7 @@ export default function ChannelList() {
 
   // 접속자 데이터
   const { data: userData } = useUserDataFetch({ dedupingInterval: 2000 });
+
   // 채널 데이터
   const { data: channelData } = useChannelsFetch({ userData, workspace });
 
@@ -26,7 +26,8 @@ export default function ChannelList() {
 
   // 각 채널의 미확인 메세지 개수 리스트
   const [countList, setCountList] = useState<{ [key: string]: number | undefined }>({});
-  // 메세기 개수 표시 유무
+
+  // 메세지 개수 표시 유무
   const [isShown, setIsShown] = useState(false);
 
   // 현재 채널의 ID
@@ -53,9 +54,8 @@ export default function ChannelList() {
     []
   );
 
+  // ? Workspace가 바뀔 때 마다 메세지 개수 상태값을 초기화
   useEffect(() => {
-    console.log('[channelList] workspace 변경: ', workspace);
-    console.log('[channelList] countList 초기화');
     setCountList({});
   }, [workspace]);
 
@@ -64,8 +64,7 @@ export default function ChannelList() {
    */
   const onMessage = useCallback(
     (data: IChat) => {
-      console.log('[channelList] 메세지 도착: ', data);
-
+      // ? 메세지가 온 채널과 현재 접속한 채널이 다를 때만 메세지 개수를 화면에 표시한다.
       if (data.ChannelId !== currentChannelId) {
         setIsShown(true);
 
@@ -82,6 +81,7 @@ export default function ChannelList() {
     [currentChannelId]
   );
 
+  // 소켓에 메세지 리스너 등록
   useEffect(() => {
     socket?.on('message', onMessage);
     // console.log('socket on message: ', socket?.hasListeners('message'));
@@ -91,7 +91,7 @@ export default function ChannelList() {
     };
   }, [socket, onMessage]);
 
-  // 현재 채널 ID 설정
+  // 현재 접속중인 채널 ID 설정
   useEffect(() => {
     const channelName = location.pathname.split('/')[4];
     setCurrentChannelId(channelData?.find((item) => item.name === channelName)?.id || 0);
