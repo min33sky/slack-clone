@@ -25,7 +25,9 @@ export default function ChannelList() {
   const [channelCollapse, setChannelCollapse] = useState(false);
 
   // 각 채널의 미확인 메세지 개수 리스트
-  const [countList, setCountList] = useState<{ [key: string]: number | undefined }>({});
+  const [messageCountList, setMessageCountList] = useState<{ [key: string]: number | undefined }>(
+    {}
+  );
 
   // 메세지 개수 표시 유무
   const [isShown, setIsShown] = useState(false);
@@ -40,11 +42,11 @@ export default function ChannelList() {
 
   /**
    * 채널의 메세지 개수 초기화
-   * @param id 채널 아이디
+   * @param id 채널 아이디 (`c-${channel.id}`)
    */
   const resetCount = useCallback(
     (id) => () => {
-      setCountList((list) => {
+      setMessageCountList((list) => {
         return {
           ...list,
           [id]: undefined,
@@ -56,7 +58,7 @@ export default function ChannelList() {
 
   // ? Workspace가 바뀔 때 마다 메세지 개수 상태값을 초기화
   useEffect(() => {
-    setCountList({});
+    setMessageCountList({});
   }, [workspace]);
 
   /**
@@ -64,11 +66,11 @@ export default function ChannelList() {
    */
   const onMessage = useCallback(
     (data: IChat) => {
-      // ? 메세지가 온 채널과 현재 접속한 채널이 다를 때만 메세지 개수를 화면에 표시한다.
+      // ? 메세지가 도착한 채널과 현재 접속중인 채널이 다를 때만 메세지 개수를 화면에 표시한다.
       if (data.ChannelId !== currentChannelId) {
         setIsShown(true);
 
-        setCountList((list) => {
+        setMessageCountList((list) => {
           return {
             ...list,
             [`c-${data.ChannelId}`]: (list[`c-${data.ChannelId}`] || 0) + 1,
@@ -113,7 +115,7 @@ export default function ChannelList() {
       <div>
         {!channelCollapse &&
           channelData?.map((channel) => {
-            const messageCount = countList[`c-${channel.id}`];
+            const messageCount = messageCountList[`c-${channel.id}`];
 
             return (
               <NavLink

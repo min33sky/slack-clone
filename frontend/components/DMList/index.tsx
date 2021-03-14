@@ -1,9 +1,9 @@
 import useSocket from '@hooks/useSocket';
 import useUserDataFetch from '@hooks/useUserDataFetch';
-import { IDM, IUser, IUserWithOnline } from '@typings/db';
+import { IDM, IUserWithOnline } from '@typings/db';
 import fetcher from '@utils/fetch';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
 import CollapseButton from './style';
@@ -13,57 +13,85 @@ import CollapseButton from './style';
  */
 export default function DMList() {
   const { workspace } = useParams<{ workspace?: string }>();
+  const location = useLocation();
 
+  // 내 정보
   const { data: userData } = useUserDataFetch({ dedupingInterval: 2000 });
 
+  // 현재 접속한 워크스페이스의 회원 정보
   const { data: memberData } = useSWR<IUserWithOnline[]>(
     userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher
   );
 
+  // 접속중인 맴버 버튼
   const [channelCollapse, setChannelCollapse] = useState(false);
-  const [countList, setCountList] = useState<{ [key: string]: number }>({});
+
+  // 접속자 별 미확인 메세지 개수 리스트
+  const [messageCountList, setMessageCountList] = useState<{ [key: string]: number }>({});
+
+  // 현재 접속중인 DM채널 ID
+  const [currentDMChannelId, setCurrentDMChannelId] = useState(0);
+
+  // 온라인 접속중인 맴버 리스트
   const [onlineList, setOnlineList] = useState<number[]>([]);
 
   const [socket] = useSocket(workspace);
 
-  const onMessage = (data: IDM) => {
-    console.log('dm왔다', data);
-    setCountList((list) => {
-      return {
-        ...list,
-        [data.SenderId]: list[data.SenderId] ? list[data.SenderId] + 1 : 1,
-      };
-    });
-  };
-
   useEffect(() => {
-    console.log('DMList: workspace 바뀜', workspace);
+    // 현재 접속중인 DM Channel ID 설정
+    const channelId = parseInt(location.pathname.split('/')[4], 10);
+    setCurrentDMChannelId(channelId);
+  }, [location, userData]);
+
+  const onMessage = useCallback(
+    (data: IDM) => {
+      if (data.SenderId !== currentDMChannelId) {
+        setMessageCountList((list) => {
+          return {
+            ...list,
+            [data.SenderId]: list[data.SenderId] ? list[data.SenderId] + 1 : 1,
+          };
+        });
+      }
+    },
+    [currentDMChannelId]
+  );
+
+  // ? 워크스페이스에 접속한 인원을 초기화 & 메세지 받은 개수 초기화
+  useEffect(() => {
+    console.log('[DMList] 현재 워크스페이스 이름: ', workspace);
     setOnlineList([]);
-    setCountList({});
+    setMessageCountList({});
   }, [workspace]);
 
   useEffect(() => {
     socket?.on('onlineList', (data: number[]) => {
-      console.log('온라인 리스트', data);
+      console.log('[DMList] 접속중인 이용자 리스트', data);
       setOnlineList(data);
     });
-    // socket?.on('dm', onMessage);
-    // console.log('socket on dm', socket?.hasListeners('dm'), socket);
+    socket?.on('dm', onMessage);
+    console.log('socket on dm', socket?.hasListeners('dm'), socket);
     return () => {
-      // socket?.off('dm', onMessage);
-      // console.log('socket off dm', socket?.hasListeners('dm'));
+      socket?.off('dm', onMessage);
+      console.log('socket off dm', socket?.hasListeners('dm'));
       socket?.off('onlineList');
     };
-  }, [socket]);
+  }, [socket, onMessage]);
 
+  /**
+   * DirectMessage 리스트 버튼 핸들러
+   */
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);
   }, []);
 
+  /**
+   * 미확인 메세지 수신 확인
+   */
   const resetCount = useCallback(
     (id) => () => {
-      setCountList((list) => {
+      setMessageCountList((list) => {
         return {
           ...list,
           [id]: 0,
@@ -85,11 +113,13 @@ export default function DMList() {
         </CollapseButton>
         <span>Direct Messages</span>
       </h2>
+
       <div>
         {!channelCollapse &&
           memberData?.map((member) => {
             const isOnline = onlineList.includes(member.id);
-            const count = countList[member.id] || 0;
+            const count = messageCountList[member.id] || 0;
+
             return (
               <NavLink
                 key={member.id}
