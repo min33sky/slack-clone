@@ -164,7 +164,6 @@ export default function DirectMessage() {
         chatSections={chatSections}
         ref={scrollbarRef}
         setSize={setSize}
-        isEmpty={isEmpty}
         isReachingEnd={isReachingEnd}
       />
 

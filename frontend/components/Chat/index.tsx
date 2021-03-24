@@ -6,6 +6,9 @@ import regexifyString from 'regexify-string';
 import { Link, useParams } from 'react-router-dom';
 import ChatWrapper from './style';
 
+const BACK_URL =
+  process.env.NODE_ENV === 'development' ? 'http://localhost:3095' : 'https://sleact.nodebird.com';
+
 interface IProps {
   data: IDM | IChat;
 }
@@ -24,24 +27,28 @@ function Chat({ data }: IProps) {
    */
   const result = useMemo(
     () =>
-      regexifyString({
-        input: data.content,
-        pattern: /@\[(.+?)]\((\d+?)\)|\n/g,
-        decorator(match, index) {
-          console.log('채팅메세지 정규표현식 적용: ', match, data.content);
-          const arr: string[] | null = match.match(/@\[(.+?)]\((\d+?)\)/)!;
-          // ? @닉네임(아이디)를 링크태그로 설정
-          if (arr) {
-            return (
-              <Link key={match + index} to={`/workspace/${workspace}/dm/${arr[2]}`}>
-                @{arr[1]}
-              </Link>
-            );
-          }
-          // ? 줄바꿈을 br태그로 변경
-          return <br key={index} />;
-        },
-      }),
+      data.content.startsWith('uploads\\') ? (
+        <img src={`${BACK_URL}/${data.content}`} style={{ maxHeight: 200 }} alt="Upload_Image" />
+      ) : (
+        regexifyString({
+          input: data.content,
+          pattern: /@\[(.+?)]\((\d+?)\)|\n/g,
+          decorator(match, index) {
+            console.log('채팅메세지 정규표현식 적용: ', match, data.content);
+            const arr: string[] | null = match.match(/@\[(.+?)]\((\d+?)\)/)!;
+            // ? @닉네임(아이디)를 링크태그로 설정
+            if (arr) {
+              return (
+                <Link key={match + index} to={`/workspace/${workspace}/dm/${arr[2]}`}>
+                  @{arr[1]}
+                </Link>
+              );
+            }
+            // ? 줄바꿈을 br태그로 변경
+            return <br key={index} />;
+          },
+        })
+      ),
     [data.content, workspace]
   );
 

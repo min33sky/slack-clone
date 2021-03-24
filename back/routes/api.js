@@ -2,6 +2,9 @@ const { Op } = require('sequelize');
 const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 
 const { sequelize } = require('../models');
 const { isNotLoggedIn, isLoggedIn } = require('./middlewares');
@@ -94,6 +97,7 @@ router.get('/workspaces/:workspace/channels', isLoggedIn, async (req, res, next)
               },
               attributes: ['UserId'],
             },
+            required: true,
           },
         ],
       })
@@ -206,6 +210,49 @@ router.get('/workspaces/:workspace/channels/:channel/chats', isLoggedIn, async (
   }
 });
 
+/**
+ * 안읽은 메세지 정보
+ */
+router.get(
+  '/workspaces/:workspace/channels/:channel/unreads',
+  isLoggedIn,
+  async (req, res, next) => {
+    try {
+      const workspace = await Workspace.findOne({
+        where: { url: req.params.workspace },
+        include: [
+          {
+            model: Channel,
+          },
+        ],
+      });
+      if (!workspace) {
+        return res.status(404).send('존재하지 않는 워크스페이스입니다.');
+      }
+      const channel = workspace.Channels.find(
+        (v) => v.name === decodeURIComponent(req.params.channel)
+      );
+      if (!channel) {
+        return res.status(404).send('존재하지 않는 채널입니다.');
+      }
+      const count = await ChannelChat.count({
+        where: {
+          ChannelId: channel.id,
+          createdAt: {
+            [Op.gt]: new Date(+req.query.after),
+          },
+        },
+      });
+      return res.json(count);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * 채팅 메세지 전송
+ */
 router.post(
   '/workspaces/:workspace/channels/:channel/chats',
   isLoggedIn,
@@ -248,6 +295,80 @@ router.post(
       io.of(`/ws-${workspace.url}`)
         .to(`/ws-${workspace.url}-${channel.id}`)
         .emit('message', chatWithUser);
+      res.send('ok');
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * 이미지 업로드
+ */
+
+try {
+  fs.readdirSync('uploads');
+} catch (error) {
+  console.error('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
+  fs.mkdirSync('uploads');
+}
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename(req, file, cb) {
+      const ext = path.extname(file.originalname);
+      cb(null, path.basename(file.originalname, ext) + Date.now() + ext);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+router.post(
+  '/workspaces/:workspace/channels/:channel/images',
+  isLoggedIn,
+  upload.array('image'),
+  async (req, res, next) => {
+    try {
+      const workspace = await Workspace.findOne({
+        where: { url: req.params.workspace },
+        include: [
+          {
+            model: Channel,
+          },
+        ],
+      });
+      if (!workspace) {
+        return res.status(404).send('존재하지 않는 워크스페이스입니다.');
+      }
+      const channel = workspace.Channels.find(
+        (v) => v.name === decodeURIComponent(req.params.channel)
+      );
+      if (!channel) {
+        return res.status(404).send('존재하지 않는 채널입니다.');
+      }
+      for (let i = 0; i < req.files.length; i++) {
+        const chat = await ChannelChat.create({
+          UserId: req.user.id,
+          ChannelId: channel.id,
+          content: req.files[i].path,
+        });
+        const chatWithUser = await ChannelChat.findOne({
+          where: { id: chat.id },
+          include: [
+            {
+              model: User,
+            },
+            {
+              model: Channel,
+            },
+          ],
+        });
+        const io = req.app.get('io');
+        io.of(`/ws-${workspace.url}`)
+          .to(`/ws-${workspace.url}-${channel.id}`)
+          .emit('message', chatWithUser);
+      }
       res.send('ok');
     } catch (error) {
       next(error);
@@ -299,10 +420,33 @@ router.get('/workspaces/:workspace/dms/:id/chats', isLoggedIn, async (req, res, 
   }
 });
 
+router.get('/workspaces/:workspace/dms/:id/unreads', isLoggedIn, async (req, res, next) => {
+  try {
+    const workspace = await Workspace.findOne({
+      where: { url: req.params.workspace },
+    });
+    if (!workspace) {
+      return res.status(404).send('존재하지 않는 워크스페이스입니다.');
+    }
+    const count = await DM.count({
+      where: {
+        WorkspaceId: workspace.id,
+        SenderId: req.params.id,
+        ReceiverId: req.user.id,
+        createdAt: {
+          [Op.gt]: new Date(+req.query.after),
+        },
+      },
+    });
+    return res.json(count);
+  } catch (error) {
+    next(error);
+  }
+});
+
 function getKeyByValue(object, value) {
   return Object.keys(object).find((key) => object[key] === value);
 }
-
 router.post('/workspaces/:workspace/dms/:id/chats', isLoggedIn, async (req, res, next) => {
   try {
     const workspace = await Workspace.findOne({
@@ -337,6 +481,51 @@ router.post('/workspaces/:workspace/dms/:id/chats', isLoggedIn, async (req, res,
     next(error);
   }
 });
+
+router.post(
+  '/workspaces/:workspace/dms/:id/images',
+  upload.array('image'),
+  isLoggedIn,
+  async (req, res, next) => {
+    try {
+      const workspace = await Workspace.findOne({
+        where: { url: req.params.workspace },
+      });
+      if (!workspace) {
+        return res.status(404).send('존재하지 않는 워크스페이스입니다.');
+      }
+      const SenderId = req.user.id;
+      const ReceiverId = req.params.id;
+      for (let i = 0; i < req.files.length; i++) {
+        const dm = await DM.create({
+          SenderId,
+          ReceiverId,
+          WorkspaceId: workspace.id,
+          content: req.files[i].path,
+        });
+        const dmWithSender = await DM.findOne({
+          where: { id: dm.id },
+          include: [
+            {
+              model: User,
+              as: 'Sender',
+            },
+          ],
+        });
+        const io = req.app.get('io');
+        const onlineMap = req.app.get('onlineMap');
+        const receiverSocketId = getKeyByValue(
+          onlineMap[`/ws-${workspace.url}`],
+          Number(ReceiverId)
+        );
+        io.of(`/ws-${workspace.url}`).to(receiverSocketId).emit('dm', dmWithSender);
+      }
+      res.send('ok');
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.get('/workspaces/:workspace/members', isLoggedIn, async (req, res, next) => {
   try {

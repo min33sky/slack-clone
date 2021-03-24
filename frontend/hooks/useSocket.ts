@@ -24,6 +24,7 @@ const useSocket = (workspace?: string): [SocketIOClient.Socket | undefined, () =
     sockets[workspace] = io.connect(`${BACK_URL}/ws-${workspace}`, {
       transports: ['websocket'],
     });
+    console.info('create socket', workspace, sockets[workspace]);
   }
 
   return [sockets[workspace], disconnect];

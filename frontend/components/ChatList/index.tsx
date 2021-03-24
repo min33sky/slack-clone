@@ -7,7 +7,6 @@ import { ChatZone, Section, StickyHeader } from './style';
 interface IProps {
   chatSections: { [key: string]: (IDM | IChat)[] };
   setSize: (_f: (_size: number) => number) => Promise<IDM[][] | IChat[][] | undefined>;
-  isEmpty: boolean;
   isReachingEnd: boolean;
 }
 
@@ -16,7 +15,7 @@ interface IProps {
  * @param chatSections 채팅 데이터 객체
  */
 const ChatList = forwardRef<Scrollbars, IProps>(
-  ({ chatSections, setSize, isEmpty, isReachingEnd }: IProps, ref) => {
+  ({ chatSections, setSize, isReachingEnd }: IProps, ref) => {
     /**
      * 스크롤 제어 핸들러
      */
