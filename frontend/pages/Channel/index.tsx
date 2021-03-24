@@ -115,6 +115,7 @@ export default function Channel() {
           )
           .then(() => {
             // TODO: 필요 없을 수도
+            console.log('[Channel] revalidate()');
             revalidate();
           })
           .catch(console.error);
@@ -183,7 +184,7 @@ export default function Channel() {
   const onDrop = useCallback(
     (e) => {
       e.preventDefault();
-      console.log(e);
+      console.log('[Channel] onDrop: ', e);
       const formData = new FormData();
       if (e.dataTransfer.items) {
         // Use DataTransferItemList interface to access the file(s)
@@ -210,18 +211,13 @@ export default function Channel() {
     [workspace, channel]
   );
 
-  const onDragOver = useCallback((e) => {
+  const onDragOver = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    console.log(e);
+    console.log('[Channel] onDragOver: ', e);
     setDragOver(true);
   }, []);
 
-  // TODO: 채팅 입력시마다 계속 함수 호출되므로 useCallback으로 처리해야 함
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
-
-  // if (!userData) {
-  //   return null;
-  // }
 
   if (channelsData && !channelData) {
     return <Redirect to={`/workspace/${workspace}/channel/일반`} />;
@@ -263,7 +259,7 @@ export default function Channel() {
       />
 
       <InviteChannelModal show={showInviteChannelModal} onCloseModal={onCloseModal} />
-      {dragOver && <DragOver>업로드!</DragOver>}
+      {dragOver && <DragOver onClick={() => setDragOver(false)}>업로드!</DragOver>}
     </Container>
   );
 }
